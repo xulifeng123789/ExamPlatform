@@ -1,0 +1,8 @@
+XML 文档解析
+
+格式：
+	<china dn="day">
+		<city quName="é»é¾æ±" pyName="heilongjiang" cityname="åå°æ»¨" state1="0" state2="0" stateDetailed="æ´" tem1="-15" tem2="-25" windState="åé£3-4çº§è½¬è¥¿é£å°äº3çº§"/>
+		<city quName="åæ" pyName="jilin" cityname="é¿æ¥" state1="0" state2="0" stateDetailed="æ´" tem1="-11" tem2="-21" windState="è¥¿åé£å°äº3çº§"/>
+		<city quName="è¾½å®" pyName="liaoning" cityname="æ²é³" state1="0" state2="0" stateDetailed="æ´" tem1="-8" tem2="-20" windState="åé£å°äº3çº§"/>
+	</china>

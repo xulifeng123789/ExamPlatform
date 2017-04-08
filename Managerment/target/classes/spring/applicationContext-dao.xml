@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+						http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context-4.0.xsd
+						http://www.springframework.org/schema/aop 
+						http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+						http://www.springframework.org/schema/tx 
+						http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+	
+	
+	<!-- 扫描包加载Service实现类 -->
+	<context:component-scan base-package="com.yangyl.service" ></context:component-scan>
+	<context:component-scan base-package="com.yangyl.wrap" ></context:component-scan>
+	<context:component-scan base-package="com.yangyl.mq" ></context:component-scan>
+	<!-- 配置cglib代理 -->
+	
+	<!-- 数据库连接池 -->
+	<!-- 加载配置文件 -->
+	<context:property-placeholder location="classpath:resource/*.properties" />
+	<!-- 数据库连接池 -->
+	<bean id="masterDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		destroy-method="close">
+		<property name="url" value="${master.jdbc.url}" />
+		<property name="username" value="${master.jdbc.username}" />
+		<property name="password" value="${master.jdbc.password}" />
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="maxActive" value="10" />
+		<property name="minIdle" value="5" />
+	</bean>
+	<bean id="slaveDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		destroy-method="close">
+		<property name="url" value="${slave.jdbc.url}" />
+		<property name="username" value="${slave.jdbc.username}" />
+		<property name="password" value="${slave.jdbc.password}" />
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="maxActive" value="10" />
+		<property name="minIdle" value="5" />
+	</bean>
+	
+	<!-- 定义数据源，使用自己实现的数据源 -->
+	<bean id="dataSource" class="com.yyl.common.datasource.DynamicDataSource">
+		<!-- 设置多个数据源 -->
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<!-- 这个key需要和程序中的key一致 -->
+				<entry key="master" value-ref="masterDataSource"/>
+				<entry key="slave" value-ref="slaveDataSource"/>
+			</map>
+		</property>
+		<!-- 设置默认的数据源，这里默认走写库 -->
+		<property name="defaultTargetDataSource" ref="masterDataSource"/>
+	</bean>
+	
+	<!-- 配置sqlsessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:mybatis/SqlMapConfig.xml" />  
+		<property name="dataSource" ref="dataSource"></property>
+		<!--mapperLocations属性指定mybatis的映射文件-->  
+        <property name="mapperLocations" value="classpath:mapper/*.xml" />
+        <property name="typeAliasesPackage" value="com.yangyl.domain"></property>
+	</bean>
+	<!-- 配置扫描包，加载mapper代理对象 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.yangyl.dao"></property>
+	</bean>
+    
+    <!-- 事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 数据源 -->
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!--使用注释事务 -->  
+	<tx:annotation-driven  transaction-manager="transactionManager" proxy-target-class="true" />
+	
+	<!-- 引入redis属性配置-->
+    <import resource="classpath:redis/applicationContext-redis.xml"/>
+    <!-- 引入mq配置文件 -->
+    <import resource="classpath:mq/applicationContext-mq.xml"/>
+</beans>

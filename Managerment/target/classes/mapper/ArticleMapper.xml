@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yangyl.dao.ArticleMapper" >
+  
+  <select id="selectOne" resultType="com.yangyl.domain.Article" parameterType="java.lang.Integer" >
+  	select * from article where article_Id=#{id}
+  </select>
+  
+  <select id="select" resultType="com.yangyl.domain.Article" parameterType="map">
+  	select * from article
+  </select>
+  
+  <delete id="delete" parameterType="Integer">
+  	delete from article where article_Id=#{id}
+  </delete>
+  
+  <insert id="insert" parameterType="com.yangyl.domain.Article">
+  	insert into article(article_title,article_content,article_date,category_Name)
+  	values(#{article_title},#{article_content},#{article_date},#{category_Name})
+  	<selectKey resultType="Integer" order="AFTER" keyProperty="id">
+        SELECT LAST_INSERT_ID() AS id
+    </selectKey>
+  </insert>
+  
+</mapper>
